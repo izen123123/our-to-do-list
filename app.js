@@ -1,4 +1,3 @@
-// Firebase 초기화
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -11,166 +10,139 @@ const firebaseConfig = {
   appId: "1:49736301438:web:fc4afc9f4a7867609f512f"
 };
 
-// 1. 비밀번호 잠금 장치 (그대로 유지)
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 비밀번호 확인 먼저
 const SECRET_PASSWORD = "1209";
 let accessGranted = sessionStorage.getItem('isLoggedIn');
 
 while (!accessGranted) {
-    let pw = prompt("Type in our anniversary date and month💜");
-    if (pw === SECRET_PASSWORD) {
-        sessionStorage.setItem('isLoggedIn', 'true');
-        accessGranted = true;
-    } else {
-        alert("You sure 🤨");
-        alert("Try again!");
-    }
+  let pw = prompt("Type in our anniversary date and month💜");
+  if (pw === SECRET_PASSWORD) {
+    sessionStorage.setItem('isLoggedIn', 'true');
+    accessGranted = true;
+  } else {
+    alert("You sure 🤨");
+    alert("Try again!");
+  }
 }
+// 이미 로그인된 경우
+document.querySelector('.container').style.display = 'block';
 
-// 2. 상태 변수 (초기 유저를 'dennie'로 설정)
+// 비밀번호 통과 후에만 아래 코드 실행
 let currentUser = 'dennie';
-let todos = JSON.parse(localStorage.getItem('couple_todos')) || [];
+let todos = [];
 
-// 자정 기준 타임스탬프 계산 함수
 function getMidnightTimestamps() {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const yesterday = today - (24 * 60 * 60 * 1000);
-    return { today, yesterday };
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const yesterday = today - (24 * 60 * 60 * 1000);
+  return { today, yesterday };
 }
 
-// 화면 그리기 (렌더링) 함수
 function render() {
-    const { today, yesterday } = getMidnightTimestamps();
-    
-    // [해결 2] 타이틀과 버튼 파란 불(active) 매칭을 dennie / chennie로 변경!
-    document.getElementById('current-user-title').innerText = `${currentUser}'s To-Do List`;
-    document.getElementById('btn-her').className = currentUser === 'dennie' ? 'active' : '';
-    document.getElementById('btn-me').className = currentUser === 'chennie' ? 'active' : '';
+  const { today, yesterday } = getMidnightTimestamps();
 
-    const todayListEl = document.getElementById('today-list');
-    const yesterdayListEl = document.getElementById('yesterday-list');
-    
-    // 리스트 초기화 (안 하면 기존 거에 계속 중복해서 붙음)
-    if (todayListEl) todayListEl.innerHTML = '';
-    if (yesterdayListEl) yesterdayListEl.innerHTML = '';
+  document.getElementById('current-user-title').innerText = `${currentUser}'s To-Do List`;
 
-    // 현재 선택된 유저의 투두만 필터링
-    const userTodos = todos.filter(todo => todo.user === currentUser);
+  document.getElementById('btn-dennie').className = currentUser === 'dennie' ? 'active' : '';
+  document.getElementById('btn-chennie').className = currentUser === 'chennie' ? 'active' : '';
 
-    userTodos.forEach(todo => {
-        const li = document.createElement('li');
-        
-        // 체크박스
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = todo.completed;
-        checkbox.onclick = () => toggleTodo(todo.id);
-        
-        // 투두 텍스트
-        const span = document.createElement('span');
-        span.innerText = todo.text;
-        if (todo.completed) span.className = 'completed';
+  const todayListEl = document.getElementById('today-list');
+  const yesterdayListEl = document.getElementById('yesterday-list');
+  if (todayListEl) todayListEl.innerHTML = '';
+  if (yesterdayListEl) yesterdayListEl.innerHTML = '';
 
-        // 수정 버튼
-        const editBtn = document.createElement('button');
-        editBtn.innerText = '✏️';
-        editBtn.className = 'todo-btn edit-btn';
-        editBtn.onclick = () => modifyTodo(todo.id);
+  const userTodos = todos.filter(todo => todo.user === currentUser);
 
-        // 삭제 버튼
-        const deleteBtn = document.createElement('button');
-        deleteBtn.innerText = '🗑️';
-        deleteBtn.className = 'todo-btn delete-btn';
-        deleteBtn.onclick = () => deleteTodo(todo.id);
+  userTodos.forEach(todo => {
+    const li = document.createElement('li');
 
-        li.appendChild(checkbox);
-        li.appendChild(span);
-        li.appendChild(editBtn);
-        li.appendChild(deleteBtn);
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = todo.completed;
+    checkbox.onclick = () => toggleTodo(todo.id, todo.completed);
 
-        // [해결 1] 리스트에 추가하는 조건 검사
-        if (todo.date === today) {
-            if (todayListEl) todayListEl.appendChild(li);
-        } else if (todo.date <= yesterday && !todo.completed) {
-            if (yesterdayListEl) yesterdayListEl.appendChild(li);
-        }
-    });
+    const span = document.createElement('span');
+    span.innerText = todo.text;
+    if (todo.completed) span.className = 'completed';
 
-    // 로컬 스토리지에 데이터 백업
-    localStorage.setItem('couple_todos', JSON.stringify(todos));
-}
+    const editBtn = document.createElement('button');
+    editBtn.innerText = '✏️';
+    editBtn.className = 'todo-btn edit-btn';
+    editBtn.onclick = () => modifyTodo(todo.id, todo.text);
 
-// 투두 추가 함수
-function addTodo() {
-    const input = document.getElementById('todo-input');
-    if (!input.value.trim()) return;
+    const deleteBtn = document.createElement('button');
+    deleteBtn.innerText = '🗑️';
+    deleteBtn.className = 'todo-btn delete-btn';
+    deleteBtn.onclick = () => deleteTodo(todo.id);
 
-    const { today } = getMidnightTimestamps();
+    li.appendChild(checkbox);
+    li.appendChild(span);
+    li.appendChild(editBtn);
+    li.appendChild(deleteBtn);
 
-    const newTodo = {
-        id: Date.now(),
-        text: input.value.trim(),
-        completed: false,
-        date: today, // 오늘 자정 타임스탬프 고정
-        user: currentUser // 현재 선택된 유저 이름으로 저장
-    };
-
-    todos.push(newTodo);
-    input.value = ''; // 입력창 비우기
-    render(); // [해결 1] 추가 후 화면 새로고침!
-}
-
-// 엔터키 쳐도 추가되게 돕는 보너스 코드
-window.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('todo-input');
-    if (input) {
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addTodo();
-        });
+    if (todo.date === today) {
+      if (todayListEl) todayListEl.appendChild(li);
+    } else if (todo.date <= yesterday && !todo.completed) {
+      if (yesterdayListEl) yesterdayListEl.appendChild(li);
     }
+  });
+}
+
+// Firestore 실시간 연동
+onSnapshot(collection(db, "todos"), (snapshot) => {
+  todos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  render();
 });
 
-// 체크박스 토글
-function toggleTodo(id) {
-    todos = todos.map(todo => {
-        if (todo.id === id) {
-            return { ...todo, completed: !todo.completed };
-        }
-        return todo;
+async function addTodo() {
+  const input = document.getElementById('todo-input');
+  if (!input.value.trim()) return;
+
+  const { today } = getMidnightTimestamps();
+
+  await addDoc(collection(db, "todos"), {
+    text: input.value.trim(),
+    completed: false,
+    date: today,
+    user: currentUser
+  });
+
+  input.value = '';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('todo-input');
+  if (input) {
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addTodo();
     });
-    render();
+  }
+});
+
+async function toggleTodo(id, currentStatus) {
+  await updateDoc(doc(db, "todos", id), { completed: !currentStatus });
 }
 
-// 투두 수정
-function modifyTodo(id) {
-    const targetTodo = todos.find(todo => todo.id === id);
-    if (!targetTodo) return;
-
-    const newText = prompt("What should I say instead?", targetTodo.text);
-    if (newText !== null && newText.trim() !== "") {
-        todos = todos.map(todo => {
-            if (todo.id === id) {
-                return { ...todo, text: newText.trim() };
-            }
-            return todo;
-        });
-        render();
-    }
+async function modifyTodo(id, currentText) {
+  const newText = prompt("What should I say instead?", currentText);
+  if (newText !== null && newText.trim() !== "") {
+    await updateDoc(doc(db, "todos", id), { text: newText.trim() });
+  }
 }
 
-// 투두 삭제
-function deleteTodo(id) {
-    if (confirm("Are you really going to delete me..?")) {
-        todos = todos.filter(todo => todo.id !== id);
-        render();
-    }
+async function deleteTodo(id) {
+  if (confirm("Are you really going to delete me..?")) {
+    await deleteDoc(doc(db, "todos", id));
+  }
 }
 
-// 유저 전환 버튼 함수
-function switchUser(user) {
-    currentUser = user;
-    render();
+// 전역으로 등록해야 html onclick에서 호출 가능
+window.switchUser = function(user) {
+  currentUser = user;
+  render();
 }
 
-// 최초 실행
-render();
+window.addTodo = addTodo;
