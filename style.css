@@ -5,7 +5,7 @@ body { font-family: Courier New, monospace; background: #f9f9f9; display: flex; 
 .user-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
 
 /* flex: 1 버튼 두 개가 나란히 정렬 */
-.user-tabs button { flex: 1; padding: 10px; cursor: pointer; border: 1px solid #ddd; background: #eee; border-radius: 10px; font-size: 13px; }
+.user-tabs button { flex: 1; padding: 10px; cursor: pointer; border: 1px solid #ddd; background: #eee; border-radius: 10px; font-size: 13px; color: #333; }
 
 .user-tabs button.active { background: #9370DB; color: white; font-weight: bold; }
 
