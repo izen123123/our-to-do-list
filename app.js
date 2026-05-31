@@ -1,3 +1,16 @@
+// Firebase 초기화
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBxVz34GE_DWVwhsJPwTwmNsuq1Gk7hTnI",
+  authDomain: "our-to-do-list-f19d4.firebaseapp.com",
+  projectId: "our-to-do-list-f19d4",
+  storageBucket: "our-to-do-list-f19d4.firebasestorage.app",
+  messagingSenderId: "49736301438",
+  appId: "1:49736301438:web:fc4afc9f4a7867609f512f"
+};
+
 // 1. 비밀번호 잠금 장치 (그대로 유지)
 const SECRET_PASSWORD = "1209";
 let accessGranted = sessionStorage.getItem('isLoggedIn');
