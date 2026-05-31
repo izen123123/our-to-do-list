@@ -34,7 +34,7 @@ body { font-family: Courier New, monospace; background: #f9f9f9; display: flex; 
 /* 체크 완료 시 취소선 */
 .completed { text-decoration: line-through; color: #aaa; }
 
-@media (max-width: 600px) {
+/* @media (max-width: 600px) {
   body {
     padding: 10px;
   }
@@ -67,4 +67,4 @@ body { font-family: Courier New, monospace; background: #f9f9f9; display: flex; 
   .section-title {
     font-size: 14px;
   }
-}
+} */
