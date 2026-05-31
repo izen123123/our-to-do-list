@@ -1,0 +1,35 @@
+body { font-family: Courier New, monospace; background: #f9f9f9; display: flex; justify-content: center; padding: 20px; }
+
+.container { width: 90%; max-width: 700px; background: white; padding: 20px; border-radius: 10px; box-shadow: 5px 5px 3px 6px rgba(0,0,0,0.1); } 
+
+.user-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+
+/* flex: 1 버튼 두 개가 나란히 정렬 */
+.user-tabs button { flex: 1; padding: 10px; cursor: pointer; border: 1px solid #ddd; background: #eee; border-radius: 10px; }
+
+.user-tabs button.active { background: #007bff; color: white; font-weight: bold; }
+
+.input-section { display: flex; gap: 10px; margin-bottom: 20px; }
+
+.input-section input { flex: 1; padding: 8px; }
+
+.todo-lists { margin-top: 20px; }
+
+.section-title { font-size: 15px; color: #666; margin-top: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+.todo-list { list-style: none; padding: 0; }
+
+.todo-list li { padding: 8px 0; display: flex; align-items: center; gap: 10px; }
+
+.todo-list li span { flex: 1; }
+
+.todo-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px ;}
+
+.edit-btn{ color: #007bff; }
+
+.delete-btn { color: #dc3545; }
+
+.todo-list.yesterday { opacity: 0.5; }
+
+/* 체크 완료 시 취소선 */
+.completed { text-decoration: line-through; color: #aaa; }
